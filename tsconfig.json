@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compileOnSave": false,
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/_frontend"
+    },
+    {
+      "path": "./packages/backend"
+    },
+    {
+      "path": "./packages/components"
+    },
+    {
+      "path": "./apps/comparison-service"
+    },
+    {
+      "path": "./apps/years-service"
+    },
+    {
+      "path": "./apps/tgi-service"
+    }
+  ],
+  "compilerOptions": {}
+}

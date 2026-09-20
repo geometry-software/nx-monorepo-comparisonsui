@@ -1,0 +1,41 @@
+{
+  "name": "@nx-react-nestjs/years-service",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "name": "years-service",
+    "targets": {
+      "serve": {
+        "continuous": true,
+        "executor": "@nx/js:node",
+        "defaultConfiguration": "development",
+        "dependsOn": ["build"],
+        "options": {
+          "buildTarget": "years-service:build",
+          "inspect": false,
+          "runBuildTargetDependencies": false
+        },
+        "configurations": {
+          "development": { "buildTarget": "years-service:build:development" },
+          "production": { "buildTarget": "years-service:build:production" }
+        }
+      }
+    },
+    "tags": ["type:app", "scope:backend", "domain:correlation"]
+  },
+  "dependencies": {
+    "@nx-react-nestjs/backend": "*",
+    "@nestjs/config": "^12.0.0",
+    "@nestjs/swagger": "^12.0.1",
+    "@nestjs/typeorm": "^12.0.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
+    "typeorm": "^1.1.1",
+    "@nestjs/common": "^12.0.1",
+    "@nestjs/core": "^12.0.1",
+    "@nestjs/platform-express": "^12.0.1",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.2",
+    "tslib": "^2.3.0"
+  }
+}
