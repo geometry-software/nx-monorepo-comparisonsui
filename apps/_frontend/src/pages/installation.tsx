@@ -11,7 +11,7 @@ import { useI18n } from '../app/i18n';
 
 const NODE_URL = 'https://nodejs.org/en/download';
 const REPOSITORY_URL =
-  'https://github.com/geometry-software/fx-monorepo-comparisonsui';
+  'https://github.com/geometry-software/nx-monorepo-comparisonsui';
 
 export function Installation() {
   const { t } = useI18n();

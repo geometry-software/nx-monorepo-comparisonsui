@@ -1,0 +1,8 @@
+node_modules/
+.nx/
+**/dist/
+**/dist-types/
+**/out-tsc/
+.env
+.env.local
+.local/

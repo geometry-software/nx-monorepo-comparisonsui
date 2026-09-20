@@ -17,8 +17,8 @@ export function Info() {
         </p>
       </header>
       <CorrelationArchitecture
-        correlationCodeUrl="https://github.com/geometry-software/fx-monorepo-comparisonsui/blob/main/apps/comparison-service/src/app/correlation/correlation.ts"
-        orchestratorCodeUrl="https://github.com/geometry-software/fx-monorepo-comparisonsui/blob/main/apps/comparison-service/src/app/comparisons.service.ts"
+        correlationCodeUrl="https://github.com/geometry-software/nx-monorepo-comparisonsui/blob/main/apps/comparison-service/src/app/correlation/correlation.ts"
+        orchestratorCodeUrl="https://github.com/geometry-software/nx-monorepo-comparisonsui/blob/main/apps/comparison-service/src/app/comparisons.service.ts"
       />
     </div>
   );

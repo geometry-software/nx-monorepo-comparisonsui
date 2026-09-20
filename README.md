@@ -1,4 +1,4 @@
-# FX Monorepo Comparisons UI
+# NX Monorepo Comparisons UI
 
 An Nx workspace for recording observations and calculating their Pearson correlation.
 
@@ -14,10 +14,14 @@ An Nx workspace for recording observations and calculating their Pearson correla
 Configure the MongoDB Atlas connection values in `.env`, install dependencies, and run:
 
 ```bash
+npm install
 npm start
 ```
 
 The application starts at [http://localhost:4201](http://localhost:4201).
+
+For local development, copy `.env.example` to `.env` and run MongoDB on
+`127.0.0.1:27017` before starting the app. Each service uses its own local database.
 
 ## Local services
 
