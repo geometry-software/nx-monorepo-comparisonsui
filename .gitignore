@@ -3,6 +3,4 @@ node_modules/
 **/dist/
 **/dist-types/
 **/out-tsc/
-.env
-.env.local
 .local/

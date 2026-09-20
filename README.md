@@ -11,17 +11,20 @@ An Nx workspace for recording observations and calculating their Pearson correla
 
 ## Start
 
-Configure the MongoDB Atlas connection values in `.env`, install dependencies, and run:
+Create and fill in `.env` in the workspace root with `YEARS_MONGODB_URI`,
+`TGI_MONGODB_URI`, and `COMPARISONS_MONGODB_URI`, then run:
 
 ```bash
-npm install
 npm start
 ```
 
 The application starts at [http://localhost:4201](http://localhost:4201).
 
-For local development, copy `.env.example` to `.env` and run MongoDB on
-`127.0.0.1:27017` before starting the app. Each service uses its own local database.
+Bootstrap stops with an error if `.env` is missing or empty. It never creates or
+overwrites the file. If the local Nx executable is missing, it runs `npm ci`
+to install dependencies from `package-lock.json` before starting the services.
+For local MongoDB, set the connection URIs in `.env` to your local databases
+and ensure MongoDB is running before starting the app.
 
 ## Local services
 
