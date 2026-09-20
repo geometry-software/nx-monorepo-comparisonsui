@@ -1,6 +1,6 @@
 {
   "name": "nx-monorepo-comparisonsui",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Nx monorepo for the UI comparisons among correlation services.",
   "license": "MIT",
   "scripts": {
