@@ -18,7 +18,7 @@ import { InjectRepository, TypeOrmModule } from '@nestjs/typeorm';
 import {
   createMongoTypeOrmOptions,
   CrudListQueryDto,
-} from '@nx-react-nestjs/backend';
+} from '@cui/network/providers';
 import type { MongoRepository } from 'typeorm';
 import { CreateSeriesObservationDto } from './series.dto.js';
 import { SeriesObservation } from './series.entity.js';

@@ -1,0 +1,38 @@
+{
+  "name": "@cui/ui",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "@cui/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./components": {
+      "@cui/source": "./src/components/index.ts",
+      "types": "./dist/components/index.d.ts",
+      "import": "./dist/components/index.js",
+      "default": "./dist/components/index.js"
+    }
+  },
+  "nx": {
+    "name": "cui-ui",
+    "tags": ["type:lib", "scope:cui", "branch:ui"]
+  },
+  "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "cn": "^0.2.6",
+    "lucide-react": "^1.43.0",
+    "next-themes": "^0.4.6",
+    "radix-ui": "^1.6.7",
+    "react": "^19.0.0",
+    "react-router-dom": "^7.18.3",
+    "sonner": "^2.0.8"
+  }
+}

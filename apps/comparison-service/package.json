@@ -1,5 +1,5 @@
 {
-  "name": "@nx-react-nestjs/comparison-service",
+  "name": "@nx-monorepo-comparisonsui/comparison-service",
   "version": "0.0.1",
   "private": true,
   "nx": {
@@ -20,7 +20,7 @@
     "tags": ["type:app", "scope:backend", "domain:correlation"]
   },
   "dependencies": {
-    "@nx-react-nestjs/backend": "*",
+    "@cui/network": "*",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.0",
     "@nestjs/core": "^11.0.0",

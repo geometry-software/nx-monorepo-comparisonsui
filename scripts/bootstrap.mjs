@@ -1,5 +1,5 @@
 import { spawn, execFile } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
@@ -15,7 +15,11 @@ const requiredUrls = [
   appUrl,
   "http://localhost:3010/api/observations?page=1&limit=1",
   "http://localhost:3012/api/observations?page=1&limit=1",
+  "http://localhost:3015/api/auth/sessions/providers",
   "http://localhost:3017/api/comparisons",
+];
+const requiredPorts = [
+  ...new Set(requiredUrls.map((url) => new URL(url).port)),
 ];
 let activeProcess;
 let activeProcessGroup = false;
@@ -36,26 +40,85 @@ function stopActiveProcess(signal) {
 
 function ensureEnvironment() {
   const envFile = new URL("../.env", import.meta.url);
-  let contents;
-  try {
-    contents = readFileSync(envFile, "utf8");
-  } catch (error) {
-    if (error.code === "ENOENT") {
-      throw new Error(
-        "The .env file was not found. Create it and fill in the required configuration.",
-      );
-    }
-    throw error;
-  }
-  if (
-    !contents
-      .split(/\r?\n/)
-      .some((line) => line.trim() && !line.trim().startsWith("#"))
-  ) {
+  if (existsSync(envFile)) return;
+
+  throw new Error("A .env file is required. Add .env to the workspace root.");
+}
+
+function findProcessesOnRequiredPorts() {
+  if (process.platform === "win32") {
     throw new Error(
-      "The .env file is empty. Fill in the required configuration.",
+      "Automatic port cleanup requires lsof and is not supported on Windows.",
     );
   }
+
+  const args = [
+    "-nP",
+    "-t",
+    "-sTCP:LISTEN",
+    ...requiredPorts.map((port) => `-iTCP:${port}`),
+  ];
+
+  return new Promise((resolve, reject) => {
+    execFile("lsof", args, (error, stdout) => {
+      if (error?.code === 1) {
+        resolve([]);
+        return;
+      }
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve(
+        [
+          ...new Set(
+            (stdout.match(/\d+/g) ?? [])
+              .map(Number)
+              .filter(
+                (processId) => Number.isInteger(processId) && processId > 0,
+              ),
+          ),
+        ],
+      );
+    });
+  });
+}
+
+async function waitForRequiredPortsToBeReleased(timeoutMs = 3000) {
+  const deadline = Date.now() + timeoutMs;
+  let remainingProcessIds = [];
+
+  while (Date.now() < deadline) {
+    remainingProcessIds = await findProcessesOnRequiredPorts();
+    if (remainingProcessIds.length === 0) return;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+
+  throw new Error(
+    `Failed to release application ports. Remaining process IDs: ${remainingProcessIds.join(", ")}`,
+  );
+}
+
+async function stopProcessesOnRequiredPorts() {
+  const processIds = await findProcessesOnRequiredPorts();
+  if (processIds.length === 0) {
+    console.log(`Ports are available: ${requiredPorts.join(", ")}`);
+    return;
+  }
+
+  console.log(
+    `Stopping processes on ports ${requiredPorts.join(", ")}: ${processIds.join(", ")}`,
+  );
+  for (const processId of processIds) {
+    try {
+      process.kill(processId, "SIGKILL");
+    } catch (error) {
+      if (error.code !== "ESRCH") throw error;
+    }
+  }
+
+  await waitForRequiredPortsToBeReleased();
 }
 
 async function ensureDependencies() {
@@ -117,18 +180,14 @@ async function waitForApp(url, timeoutMs = 30000) {
         console.log(`Ready: ${url}`);
         return;
       }
-    } catch {
-      // The dev server is still starting.
-    }
+    } catch {}
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   throw new Error(`Service did not become ready at ${url}`);
 }
 
-async function start() {
-  ensureEnvironment();
-  await ensureDependencies();
-  console.log("Starting frontend and 3 analysis services...");
+function startDevelopmentProcess() {
+  console.log("Starting frontend and 4 services...");
   const devProcess = spawn(npmCommand, ["run", "dev"], {
     cwd: workspaceRoot,
     stdio: "inherit",
@@ -138,7 +197,12 @@ async function start() {
   });
   activeProcess = devProcess;
   activeProcessGroup = process.platform !== "win32";
-  const exited = new Promise((resolve, reject) => {
+
+  return devProcess;
+}
+
+function waitForDevelopmentProcess(devProcess) {
+  return new Promise((resolve, reject) => {
     devProcess.once("error", reject);
     devProcess.once("exit", (code, signal) => {
       readinessController.abort(new Error("Development process stopped."));
@@ -151,6 +215,9 @@ async function start() {
         );
     });
   });
+}
+
+async function waitForServices(exited) {
   console.log("Waiting for service readiness...");
   await Promise.race([
     Promise.all(requiredUrls.map((url) => waitForApp(url, 60000))),
@@ -160,16 +227,37 @@ async function start() {
       );
     }),
   ]);
+}
+
+function registerShutdownHandlers() {
+  process.on("SIGINT", () => stopActiveProcess("SIGINT"));
+  process.on("SIGTERM", () => stopActiveProcess("SIGTERM"));
+}
+
+function announceApplicationReady() {
   console.log(`Application is ready: ${appUrl}`);
   openBrowser();
+}
+
+function handleStartError(error) {
+  readinessController.abort(error);
+  stopActiveProcess("SIGTERM");
+  console.error(error);
+  process.exitCode = 1;
+}
+
+async function start() {
+  registerShutdownHandlers();
+  ensureEnvironment();
+  await ensureDependencies();
+  await stopProcessesOnRequiredPorts();
+
+  const devProcess = startDevelopmentProcess();
+  const exited = waitForDevelopmentProcess(devProcess);
+
+  await waitForServices(exited);
+  announceApplicationReady();
   await exited;
 }
 
-process.on("SIGINT", () => stopActiveProcess("SIGINT"));
-process.on("SIGTERM", () => stopActiveProcess("SIGTERM"));
-start().catch((error) => {
-  readinessController.abort(error);
-  stopActiveProcess("SIGTERM");
-  console.error(error.message);
-  process.exitCode = 1;
-});
+start().catch(handleStartError);

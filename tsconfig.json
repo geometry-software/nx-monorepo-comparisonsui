@@ -4,13 +4,16 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/_frontend"
+      "path": "./apps/frontend"
     },
     {
-      "path": "./packages/backend"
+      "path": "./packages/cui/network"
     },
     {
-      "path": "./packages/components"
+      "path": "./packages/cui/ui"
+    },
+    {
+      "path": "./packages/cui/account"
     },
     {
       "path": "./apps/comparison-service"
@@ -20,6 +23,9 @@
     },
     {
       "path": "./apps/tgi-service"
+    },
+    {
+      "path": "./apps/auth-service"
     }
   ],
   "compilerOptions": {}

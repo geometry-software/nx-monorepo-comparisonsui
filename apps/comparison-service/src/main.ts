@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { configureNestApplication, configureSwagger, readPort } from '@nx-react-nestjs/backend';
+import { configureNestApplication, configureSwagger, readPort } from '@cui/network/providers';
 import { AppModule } from './app/app.module';
 
 async function bootstrap() {

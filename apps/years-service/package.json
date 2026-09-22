@@ -1,5 +1,5 @@
 {
-  "name": "@nx-react-nestjs/years-service",
+  "name": "@nx-monorepo-comparisonsui/years-service",
   "version": "0.0.1",
   "private": true,
   "nx": {
@@ -9,22 +9,32 @@
         "continuous": true,
         "executor": "@nx/js:node",
         "defaultConfiguration": "development",
-        "dependsOn": ["build"],
+        "dependsOn": [
+          "build"
+        ],
         "options": {
           "buildTarget": "years-service:build",
           "inspect": false,
           "runBuildTargetDependencies": false
         },
         "configurations": {
-          "development": { "buildTarget": "years-service:build:development" },
-          "production": { "buildTarget": "years-service:build:production" }
+          "development": {
+            "buildTarget": "years-service:build:development"
+          },
+          "production": {
+            "buildTarget": "years-service:build:production"
+          }
         }
       }
     },
-    "tags": ["type:app", "scope:backend", "domain:correlation"]
+    "tags": [
+      "type:app",
+      "scope:backend",
+      "domain:correlation"
+    ]
   },
   "dependencies": {
-    "@nx-react-nestjs/backend": "*",
+    "@cui/network": "*",
     "@nestjs/config": "^4.0.0",
     "@nestjs/swagger": "^11.0.0",
     "@nestjs/typeorm": "^11.0.0",

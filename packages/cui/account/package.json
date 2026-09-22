@@ -1,0 +1,42 @@
+{
+  "name": "@cui/account",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "@cui/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./sessions": {
+      "@cui/source": "./src/sessions/index.ts",
+      "types": "./dist/sessions/index.d.ts",
+      "import": "./dist/sessions/index.js",
+      "default": "./dist/sessions/index.js"
+    },
+    "./translations": {
+      "@cui/source": "./src/translations/index.ts",
+      "types": "./dist/translations/index.d.ts",
+      "import": "./dist/translations/index.js",
+      "default": "./dist/translations/index.js"
+    }
+  },
+  "nx": {
+    "name": "cui-account",
+    "tags": [
+      "type:lib",
+      "scope:cui",
+      "branch:account"
+    ]
+  },
+  "dependencies": {
+    "@cui/network": "*",
+    "@supabase/supabase-js": "^2.116.0"
+  }
+}

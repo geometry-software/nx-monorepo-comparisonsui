@@ -1,0 +1,91 @@
+{
+  "name": "@cui/network",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "@cui/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./providers": {
+      "@cui/source": "./src/providers/index.ts",
+      "types": "./dist/providers/index.d.ts",
+      "import": "./dist/providers/index.js",
+      "default": "./dist/providers/index.js"
+    },
+    "./providers/core": {
+      "@cui/source": "./src/providers/core/index.ts",
+      "types": "./dist/providers/core/index.d.ts",
+      "import": "./dist/providers/core/index.js",
+      "default": "./dist/providers/core/index.js"
+    },
+    "./providers/firebase": {
+      "@cui/source": "./src/providers/firebase/index.ts",
+      "types": "./dist/providers/firebase/index.d.ts",
+      "import": "./dist/providers/firebase/index.js",
+      "default": "./dist/providers/firebase/index.js"
+    },
+    "./providers/memory": {
+      "@cui/source": "./src/providers/memory/index.ts",
+      "types": "./dist/providers/memory/index.d.ts",
+      "import": "./dist/providers/memory/index.js",
+      "default": "./dist/providers/memory/index.js"
+    },
+    "./providers/mongodb": {
+      "@cui/source": "./src/providers/mongodb/index.ts",
+      "types": "./dist/providers/mongodb/index.d.ts",
+      "import": "./dist/providers/mongodb/index.js",
+      "default": "./dist/providers/mongodb/index.js"
+    },
+    "./providers/nest": {
+      "@cui/source": "./src/providers/nest/index.ts",
+      "types": "./dist/providers/nest/index.d.ts",
+      "import": "./dist/providers/nest/index.js",
+      "default": "./dist/providers/nest/index.js"
+    },
+    "./providers/supabase": {
+      "@cui/source": "./src/providers/supabase/index.ts",
+      "types": "./dist/providers/supabase/index.d.ts",
+      "import": "./dist/providers/supabase/index.js",
+      "default": "./dist/providers/supabase/index.js"
+    }
+  },
+  "nx": {
+    "name": "cui-network",
+    "tags": [
+      "type:lib",
+      "scope:cui",
+      "branch:network"
+    ]
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
+    "firebase": "^12.19.0",
+    "mongodb": "^7.6.0",
+    "typeorm": "^1.1.1"
+  },
+  "devDependencies": {
+    "vitest": "~4.1.0"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/swagger": "^11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@nestjs/common": {
+      "optional": true
+    },
+    "@nestjs/swagger": {
+      "optional": true
+    }
+  }
+}

@@ -12,7 +12,7 @@
     "dev": "npm run dev:analysis",
     "start": "node scripts/bootstrap.mjs",
     "seed": "sh scripts/seed-analysis.sh",
-    "dev:analysis": "nx run-many -t serve --parallel=4",
+    "dev:analysis": "nx run-many -t serve --parallel=5",
     "graph": "nx graph"
   },
   "private": true,
@@ -71,6 +71,7 @@
   },
   "workspaces": [
     "packages/*",
+    "packages/cui/*",
     "apps/*"
   ],
   "overrides": {

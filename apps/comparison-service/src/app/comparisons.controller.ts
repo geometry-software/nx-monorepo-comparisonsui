@@ -5,7 +5,7 @@ import {
   type ApiEndpoint,
   type ApiResponseContainer,
   type BulkDeleteResult,
-} from '@nx-react-nestjs/backend';
+} from '@cui/network/providers';
 import type { Comparison } from './comparison.entity';
 import type { ComparisonDefinition } from './comparison.definition';
 import { ComparisonsService } from './comparisons.service';

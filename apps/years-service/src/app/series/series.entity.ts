@@ -1,5 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import type { EntityId } from '@nx-react-nestjs/backend';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import type { EntityId } from "@cui/network/providers";
 import {
   Column,
   CreateDateColumn,
@@ -7,9 +7,9 @@ import {
   Index,
   ObjectIdColumn,
   UpdateDateColumn,
-} from 'typeorm';
+} from "typeorm";
 
-@Entity({ name: 'observations' })
+@Entity({ name: "observations" })
 export class SeriesObservation {
   @ObjectIdColumn()
   @ApiProperty({ type: String })

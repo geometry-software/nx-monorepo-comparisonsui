@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { createMongoTypeOrmOptions } from '@nx-react-nestjs/backend';
+import { createMongoTypeOrmOptions } from '@cui/network/providers';
 import { Comparison } from './comparison.entity';
 import { ComparisonsController } from './comparisons.controller';
 import { ComparisonsService } from './comparisons.service';

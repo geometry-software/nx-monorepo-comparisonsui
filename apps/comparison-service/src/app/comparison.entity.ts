@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import type { EntityId } from '@nx-react-nestjs/backend';
+import type { EntityId } from '@cui/network/providers';
 import { Column, CreateDateColumn, Entity, Index, ObjectIdColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity({ name: 'comparisons' })

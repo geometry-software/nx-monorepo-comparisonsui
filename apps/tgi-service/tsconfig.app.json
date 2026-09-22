@@ -13,7 +13,7 @@
   "exclude": ["**/*.spec.ts", "**/*.test.ts"],
   "references": [
     {
-      "path": "../../packages/backend/tsconfig.lib.json"
+      "path": "../../packages/cui/network/tsconfig.lib.json"
     }
   ]
 }

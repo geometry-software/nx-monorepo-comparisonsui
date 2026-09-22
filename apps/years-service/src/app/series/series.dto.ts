@@ -1,6 +1,6 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsInt, IsNumber, IsOptional, Max, Min } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { Type } from "class-transformer";
+import { IsInt, IsNumber, IsOptional, Max, Min } from "class-validator";
 
 export class CreateSeriesObservationDto {
   @ApiProperty({ minimum: 1900, maximum: 2200 })

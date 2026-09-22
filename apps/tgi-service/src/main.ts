@@ -4,7 +4,7 @@ import {
   configureNestApplication,
   configureSwagger,
   readPort,
-} from '@nx-react-nestjs/backend';
+} from '@cui/network/providers';
 import { SeriesServiceModule } from './app/series/series-service.module';
 
 @Module({
