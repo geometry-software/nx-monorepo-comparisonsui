@@ -5,9 +5,12 @@ export type ConfigurationReader = {
   getOrThrow<TValue>(key: string): TValue;
 };
 
-export function configureNestApplication(app: INestApplication): void {
+export function configureNestApplication(
+  app: INestApplication,
+  corsOptions?: Parameters<INestApplication["enableCors"]>[0],
+): void {
   app.setGlobalPrefix("api");
-  app.enableCors();
+  app.enableCors(corsOptions);
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 }
 

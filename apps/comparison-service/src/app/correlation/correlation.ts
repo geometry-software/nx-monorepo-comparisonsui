@@ -1,7 +1,7 @@
-export type NumericObservation = { year: number; value: number };
+export type NumericObservation = { period: string; value: number };
 
 export type AlignedObservation = {
-  year: number;
+  period: string;
   left: number;
   right: number;
 };
@@ -10,15 +10,15 @@ export function alignSeries(
   left: NumericObservation[],
   right: NumericObservation[],
 ): AlignedObservation[] {
-  const rightByYear = new Map(right.map((item) => [item.year, item.value]));
+  const rightByPeriod = new Map(right.map((item) => [item.period, item.value]));
   return left
-    .filter((item) => rightByYear.has(item.year))
+    .filter((item) => rightByPeriod.has(item.period))
     .map((item) => ({
-      year: item.year,
+      period: item.period,
       left: item.value,
-      right: rightByYear.get(item.year) as number,
+      right: rightByPeriod.get(item.period) as number,
     }))
-    .sort((a, b) => a.year - b.year);
+    .sort((a, b) => a.period.localeCompare(b.period));
 }
 
 export function pearsonCorrelation(points: AlignedObservation[]): number | null {

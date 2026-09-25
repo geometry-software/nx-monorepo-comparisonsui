@@ -1,5 +1,5 @@
 import type { RepositoryQuery } from "../core/query.js";
-import type { CrudRepositoryPort } from "../core/repository.js";
+import type { CrudRepositoryPort, RepositoryReadPort } from "../core/repository.js";
 import type { PaginatedResult } from "../core/types.js";
 
 export type MongoDbFieldFilter<TValue> =
@@ -19,16 +19,24 @@ export type MongoDbRepositoryQuery<TData> = RepositoryQuery & {
   }>;
 };
 
-export interface MongoDbQueryPort<TData> {
-  findAll(
-    query: MongoDbRepositoryQuery<TData>,
-  ): Promise<PaginatedResult<TData>>;
-}
+export interface MongoDbQueryPort<TData>
+  extends RepositoryReadPort<
+    TData,
+    string,
+    MongoDbRepositoryQuery<TData>,
+    PaginatedResult<TData>
+  > {}
 
 export interface MongoDbRepositoryPort<
   TData,
   TCreate = TData,
   TUpdate = TCreate,
   TId = string,
-> extends CrudRepositoryPort<TData, TCreate, TUpdate, TId>,
-    MongoDbQueryPort<TData> {}
+> extends CrudRepositoryPort<
+    TData,
+    TCreate,
+    TUpdate,
+    TId,
+    MongoDbRepositoryQuery<TData>,
+    PaginatedResult<TData>
+  > {}

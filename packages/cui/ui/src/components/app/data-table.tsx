@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardFooter } from '../ui/card';
 import { Checkbox } from '../ui/checkbox';
+import { EmptyList } from './empty-list';
 import { Skeleton } from '../ui/skeleton';
 import {
   Table,
@@ -45,6 +46,8 @@ export function DataTable<T extends { id: string }>({
   onPage,
   labels,
   itemLabel = 'items',
+  searchBar,
+  hideSearchBar = false,
   selectedIds,
   onSelectedIdsChange,
 }: {
@@ -57,7 +60,6 @@ export function DataTable<T extends { id: string }>({
   pages: number;
   onPage: (page: number) => void;
   labels: {
-    empty: string;
     showing: string;
     pagination: string;
     previous: string;
@@ -67,6 +69,8 @@ export function DataTable<T extends { id: string }>({
     selectRow?: (name: string) => string;
   };
   itemLabel?: string;
+  searchBar?: ReactNode;
+  hideSearchBar?: boolean;
   selectedIds?: ReadonlySet<string>;
   onSelectedIdsChange?: (selectedIds: Set<string>) => void;
 }) {
@@ -79,7 +83,12 @@ export function DataTable<T extends { id: string }>({
   const columnCount = columns.length + (selectable ? 1 : 0);
   const first = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const last = total === 0 ? 0 : Math.min(total, first + rows.length - 1);
+  if (!loading && rows.length === 0) {
+    return <>{!hideSearchBar && searchBar}<EmptyList /></>;
+  }
   return (
+    <>
+    {!hideSearchBar && searchBar}
     <Card className="gap-0 overflow-hidden py-0">
       <Table>
         <TableHeader>
@@ -119,7 +128,7 @@ export function DataTable<T extends { id: string }>({
                 </TableCell>
               </TableRow>
             ))
-          ) : rows.length ? (
+          ) : (
             rows.map((row) => (
               <TableRow
                 data-state={selectedIds?.has(row.id) ? 'selected' : undefined}
@@ -150,15 +159,6 @@ export function DataTable<T extends { id: string }>({
                 ))}
               </TableRow>
             ))
-          ) : (
-            <TableRow>
-              <TableCell
-                className="h-28 text-center text-muted-foreground"
-                colSpan={columnCount}
-              >
-                {labels.empty}
-              </TableCell>
-            </TableRow>
           )}
         </TableBody>
       </Table>
@@ -209,5 +209,6 @@ export function DataTable<T extends { id: string }>({
         </div>
       </CardFooter>
     </Card>
+    </>
   );
 }

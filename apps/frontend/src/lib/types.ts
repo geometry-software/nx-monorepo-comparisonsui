@@ -1,36 +1,30 @@
-export type Meta = {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-};
-export type Page<T> = { data: T[]; meta: Meta };
-export type BulkDeleteResponse = { deleted: number };
-export type SeriesKey = 'years' | 'tgi';
-export type SeriesObservation = {
-  id: string;
-  year: number;
-  value?: number;
-  createdAt: string;
-  updatedAt: string;
-};
-export type Comparison = {
-  id: string;
-  pairKey: string;
-  leftEntity: string;
-  rightEntity: string;
+export type PearsonCorrelationCalculation = {
+  sourceA: string;
+  sourceB: string;
   r: number | null;
   observationCount: number;
-  years: number[];
-  leftValues: number[];
-  rightValues: number[];
+  periods: string[];
+  sourceAValues: number[];
+  sourceBValues: number[];
+};
+export type ComputeComparison = {
+  id: string;
+  provider: 'mongodb' | 'bump';
+  name: string;
+  description?: string;
+  accountSessionId: number;
+  sourceCount: number;
+  comparisonModel: ComparisonModel;
+  pearsonCorrelations: PearsonCorrelationCalculation[];
   createdAt: string;
-  updatedAt: string;
+};
+export type ComparisonModel = {
+  id: 'period-value';
+  fields: { period: 'string'; value: 'number' };
 };
 export type ComparisonDefinition = {
-  sources: Array<{ key: string; label: string }>;
-  pairCount: number;
-  alignment: { field: 'year'; label: string };
+  model: ComparisonModel;
+  alignment: { field: 'period'; label: string };
   metric: {
     field: 'r';
     key: 'pearson';
@@ -41,7 +35,6 @@ export type ComparisonDefinition = {
     emptyLabel: string;
   };
   table: {
-    idLabel: string;
     pairLabel: string;
     coverageLabel: string;
     pairSeparator: string;

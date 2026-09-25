@@ -1,3 +1,5 @@
+import type { SessionToken, SessionTokenInput, SessionTokenUpdate } from './session-token.model.js';
+
 export type SessionIdentity = {
   provider: string;
   identityId: string;
@@ -60,6 +62,9 @@ export interface SessionStoragePort {
   findActive(providerId: string): Promise<StoredSession>;
   markVerified(sessionId: number): Promise<VerifiedStoredSession>;
   close(sessionId: number): Promise<ClosedStoredSession>;
+  listTokens(): Promise<SessionToken[]>;
+  createToken(value: SessionTokenInput): Promise<SessionToken>;
+  updateToken(sessionId: number, value: SessionTokenUpdate): Promise<SessionToken>;
 }
 
 export type SessionProviderRegistration<TProvider> =
@@ -93,4 +98,7 @@ export interface SessionService {
   current(credential: string): Promise<Session>;
   verify(credential: string): Promise<SessionVerification>;
   close(sessionId: number, credential: string): Promise<ClosedStoredSession>;
+  listTokens(): Promise<SessionToken[]>;
+  createToken(value: SessionTokenInput): Promise<SessionToken>;
+  updateToken(sessionId: number, value: SessionTokenUpdate): Promise<SessionToken>;
 }

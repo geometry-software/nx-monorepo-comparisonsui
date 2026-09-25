@@ -4,10 +4,10 @@
 
 The current provider composition uses:
 
-- Firebase Authentication to create anonymous identities, refresh credentials, verify active accounts, and delete the identity when a session closes.
+- Firebase Authentication through the official `firebase/auth` npm SDK to create anonymous identities. Firebase Auth REST endpoints refresh credentials, verify active accounts, and delete identities when sessions close.
 - Supabase to store the application session row and its lifecycle timestamps.
 
-NestJS controllers, cookies, environment loading, and HTTP status mapping belong to the consuming Auth Service.
+NestJS controllers, environment loading, and HTTP status mapping belong to the consuming Auth Service.
 
 ## Public entry points
 
@@ -64,13 +64,13 @@ SessionService from @cui/account
 
 ### Create
 
-1. Firebase creates an anonymous identity and returns its identity ID and refresh credential.
+1. The Firebase npm SDK creates an anonymous identity and returns its identity ID and refresh token.
 2. Supabase inserts a `sessions` row containing the provider and provider ID.
 3. The service returns an active, unverified session.
 
 ### Current
 
-1. Firebase refreshes and verifies the credential.
+1. Firebase exchanges the saved refresh token for an ID token and verifies the identity without relying on process memory. Existing ID-token credentials are checked through Firebase account lookup while they remain valid.
 2. Supabase finds the latest open row for the Firebase identity.
 3. The session is considered verified only when the identity is valid and `verified_at` is present.
 
@@ -84,7 +84,7 @@ SessionService from @cui/account
 
 ### Close
 
-1. Firebase deletes the anonymous identity.
+1. Firebase verifies the credential and deletes the anonymous identity.
 2. Supabase sets `closed_at` on the matching open session row.
 
 ## Session service API
@@ -107,6 +107,7 @@ export interface SessionService {
 - `current()` restores an open session from a credential.
 - `verify()` verifies Firebase and updates the latest Supabase verification timestamp.
 - `close()` closes both provider resources.
+- `listTokens()`, `createToken()`, and `updateToken()` use the same configured session storage provider and Supabase client as the other session operations.
 
 ## Configuration
 
@@ -131,6 +132,7 @@ const sessions = createSessionService(
 ```
 
 Required environment values remain in the consuming application. The package does not load `.env` files and does not contain credentials.
+The Auth Service creates one library session service from this configuration; its Tokens routes call that service without registering another Supabase repository or reading the storage settings again.
 
 ## NestJS integration
 
@@ -156,7 +158,7 @@ The package itself does not depend on NestJS. The Auth Service registers the lib
 }
 ```
 
-The Auth Service owns the HTTP-only cookie and maps package errors to HTTP exceptions. Provider credentials never need to be sent to the frontend.
+The Auth Service maps package errors to HTTP exceptions and does not create cookies. The frontend keeps the active credential in browser session storage and sends it explicitly with session commands. Refreshing the page or restarting the Auth Service does not discard a valid session; invalid credentials return HTTP 401 so the frontend can clear stale state.
 
 ## Supabase schema
 
@@ -170,6 +172,8 @@ Run [`sql/sessions.sql`](./sql/sessions.sql) in the Supabase SQL Editor. The scr
 | `closed_at` | Closure timestamp; `null` while active |
 | `provider` | Identity provider name |
 | `provider_id` | Provider identity ID |
+
+The Tokens page displays `provider_id` as its Token value. This identifier is not the Firebase authentication credential. Adding a row manually does not create a Firebase identity; editing or deleting a row linked to an active identity can invalidate that account session.
 
 ## Translations
 

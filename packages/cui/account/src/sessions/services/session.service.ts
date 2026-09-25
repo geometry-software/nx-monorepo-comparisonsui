@@ -99,8 +99,24 @@ export function createSessionService(
     async close(sessionId, credential) {
       const { identityProvider, storageProvider } =
         requireSessionProviders(configuration);
+      const verification = await identityProvider.verify(credential);
+      const storedSession = await storageProvider.findActive(
+        verification.identityId,
+      );
+      if (storedSession.sessionId !== sessionId) {
+        throw new Error("Session ID does not match the Firebase identity");
+      }
       await identityProvider.close(credential);
       return storageProvider.close(sessionId);
+    },
+    listTokens() {
+      return requireProvider(configuration.storage).listTokens();
+    },
+    createToken(value) {
+      return requireProvider(configuration.storage).createToken(value);
+    },
+    updateToken(sessionId, value) {
+      return requireProvider(configuration.storage).updateToken(sessionId, value);
     },
   };
 }
@@ -116,8 +132,8 @@ function requireProvider<TProvider>(
   registration: SessionProviderRegistration<TProvider>,
 ): TProvider {
   if (registration.useValue !== undefined) return registration.useValue;
-  const message = registration.connection.connected
-    ? "Session provider is not initialized"
-    : registration.connection.error;
+  const message = "error" in registration.connection
+    ? registration.connection.error
+    : "Session provider is not initialized";
   throw new SessionProviderUnavailableError(message);
 }

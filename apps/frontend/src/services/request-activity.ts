@@ -2,7 +2,7 @@ import { isFulfilled, isPending, isRejected } from '@reduxjs/toolkit';
 import type { Middleware } from '@reduxjs/toolkit';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
-export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 type RequestActivitySnapshot = {
   active: boolean;

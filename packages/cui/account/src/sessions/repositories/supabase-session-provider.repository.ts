@@ -14,10 +14,12 @@ import type {
   StoredSession,
   VerifiedStoredSession,
 } from "../models/session.model.js";
+import type { SessionToken, SessionTokenInput, SessionTokenUpdate } from '../models/session-token.model.js';
 
 const SESSION_COLUMNS = "id, created_at, verified_at, provider";
 const CLOSED_SESSION_COLUMNS =
   "id, created_at, verified_at, closed_at, provider";
+const TOKEN_COLUMNS = 'id, provider_id, provider, created_at, verified_at, closed_at';
 
 export function createSupabaseSessionStorageProviderRepository(
   options: SupabaseSessionStorageProviderRepositoryOptions,
@@ -106,6 +108,37 @@ class SupabaseSessionStorageProviderRepositoryAdapter
     }
     return decodeClosedStoredSession(data);
   }
+
+  async listTokens(): Promise<SessionToken[]> {
+    const { data, error } = await this.client
+      .from('sessions')
+      .select(TOKEN_COLUMNS)
+      .order('created_at', { ascending: false });
+    if (error) throw new RepositoryOperationError('list session tokens', error);
+    return (data ?? []).map(decodeSessionToken);
+  }
+
+  async createToken(value: SessionTokenInput): Promise<SessionToken> {
+    const { data, error } = await this.client
+      .from('sessions')
+      .insert({ provider_id: value.token, provider: value.provider })
+      .select(TOKEN_COLUMNS)
+      .single();
+    if (error) throw new RepositoryOperationError('create session token', error);
+    return decodeSessionToken(data);
+  }
+
+  async updateToken(sessionId: number, value: SessionTokenUpdate): Promise<SessionToken> {
+    const { data, error } = await this.client
+      .from('sessions')
+      .update({ verified_at: value.verifiedAt, closed_at: value.closedAt })
+      .eq('id', sessionId)
+      .select(TOKEN_COLUMNS)
+      .maybeSingle();
+    if (error) throw new RepositoryOperationError('update session token', error);
+    if (!data) throw new RepositoryNotFoundError('Session token', sessionId);
+    return decodeSessionToken(data);
+  }
 }
 
 function throwSupabaseError(
@@ -168,4 +201,26 @@ function decodeClosedStoredSession(value: unknown): ClosedStoredSession {
     );
   }
   return { ...session, closedAt };
+}
+
+function decodeSessionToken(value: unknown): SessionToken {
+  if (typeof value !== 'object' || value === null) {
+    throw new RepositoryValidationError('Supabase returned an invalid session token row');
+  }
+  const row = value as Record<string, unknown>;
+  const sessionId = Number(row.id);
+  const token = String(row.provider_id ?? '');
+  const provider = String(row.provider ?? '');
+  const createdAt = String(row.created_at ?? '');
+  if (!Number.isSafeInteger(sessionId) || !token || !provider || !createdAt) {
+    throw new RepositoryValidationError('Supabase returned an incomplete session token row');
+  }
+  return {
+    sessionId,
+    token,
+    provider,
+    createdAt,
+    verifiedAt: row.verified_at ? String(row.verified_at) : undefined,
+    closedAt: row.closed_at ? String(row.closed_at) : undefined,
+  };
 }

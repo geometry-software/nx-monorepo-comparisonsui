@@ -1,6 +1,13 @@
 import type { BulkDeleteResult } from "./types.js";
 
-export interface RepositoryReadPort<TData, TId = string> {
+export interface RepositoryReadPort<
+  TData,
+  TId = string,
+  TQuery = never,
+  TQueryResult = TData[],
+> {
+  findAll(): Promise<TData[]>;
+  findAll(query: TQuery): Promise<TQueryResult>;
   findOne(id: TId): Promise<TData>;
 }
 
@@ -22,7 +29,9 @@ export interface CrudRepositoryPort<
   TCreate = TData,
   TUpdate = TCreate,
   TId = string,
-> extends RepositoryReadPort<TData, TId>,
+  TQuery = never,
+  TQueryResult = TData[],
+> extends RepositoryReadPort<TData, TId, TQuery, TQueryResult>,
     RepositoryCreatePort<TData, TCreate>,
     RepositoryUpdatePort<TData, TUpdate, TId>,
     RepositoryDeletePort<TId> {}

@@ -31,7 +31,7 @@ function createFirebaseIdentityRegistration(
   try {
     const apiKey = requiredValue(options.apiKey, "FIREBASE_API_KEY");
     const projectId = requiredValue(options.projectId, "FIREBASE_PROJECT_ID");
-    const provider = createFirebaseAuthProviderRepository({ apiKey });
+    const provider = createFirebaseAuthProviderRepository({ apiKey, projectId });
     return {
       useValue: provider,
       connection: { connected: true, identifier: projectId },

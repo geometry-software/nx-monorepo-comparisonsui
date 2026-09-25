@@ -70,9 +70,31 @@ export class SupabaseRepository<
     private readonly idColumn = "id",
   ) {}
 
+  async findAll(): Promise<TEntity[]>;
   async findAll(
     query: SupabaseRepositoryQuery<TEntity>,
-  ): Promise<PaginatedResult<TEntity>> {
+  ): Promise<PaginatedResult<TEntity>>;
+  async findAll(
+    query?: SupabaseRepositoryQuery<TEntity>,
+  ): Promise<TEntity[] | PaginatedResult<TEntity>> {
+    if (query === undefined) {
+      const entities: TEntity[] = [];
+      const batchSize = 1000;
+      while (true) {
+        const { data, error } = await this.client
+          .from(this.tableName)
+          .select("*")
+          .order(this.idColumn, { ascending: true })
+          .range(entities.length, entities.length + batchSize - 1);
+        if (error) throw new RepositoryOperationError("findAll", error);
+        if (!data?.length) return entities;
+        entities.push(
+          ...data.map((record) =>
+            this.codec.decode(record as RepositoryRecord),
+          ),
+        );
+      }
+    }
     if (!isValidPageQuery(query)) {
       throw new RepositoryValidationError(
         "Supabase pagination requires positive integer page and limit values",

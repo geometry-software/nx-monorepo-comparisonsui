@@ -4,6 +4,7 @@ import {
   ServiceUnavailableException,
   UnauthorizedException,
 } from "@nestjs/common";
+import { RepositoryNotFoundError } from "@cui/network/providers/core";
 import type {
   ClosedStoredSession,
   Session as LibrarySession,
@@ -13,7 +14,7 @@ import type {
 } from "@cui/account/sessions";
 import { LIBRARY_SESSION_SERVICE } from "./session.tokens.js";
 
-export type AuthSession = Omit<LibrarySession, "credential">;
+export type AuthSession = LibrarySession;
 
 @Injectable()
 export class SessionService {
@@ -26,13 +27,9 @@ export class SessionService {
     return this.sessions.initialize();
   }
 
-  async create(): Promise<{
-    session: AuthSession;
-    credential: string;
-  }> {
+  async create(): Promise<AuthSession> {
     try {
-      const { credential, ...session } = await this.sessions.create();
-      return { session, credential };
+      return await this.sessions.create();
     } catch (error) {
       throw new ServiceUnavailableException(errorMessage(error));
     }
@@ -54,12 +51,16 @@ export class SessionService {
         createdAt: session.createdAt,
         provider: session.provider,
         identityId: session.identityId,
+        credential,
         active: session.active,
         verified: session.verified,
         verifiedAt: session.verifiedAt,
       };
     } catch (error) {
-      throw new UnauthorizedException(errorMessage(error));
+      if (error instanceof RepositoryNotFoundError) {
+        throw new UnauthorizedException(errorMessage(error));
+      }
+      throw new ServiceUnavailableException(errorMessage(error));
     }
   }
 

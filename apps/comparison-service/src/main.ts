@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { configureNestApplication, configureSwagger, readPort } from '@cui/network/providers';
-import { AppModule } from './app/app.module';
+import { configureNestApplication, configureSwagger, readPort } from '@cui/network/providers/nest';
+import { AppModule } from './app/modules/app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

@@ -37,6 +37,7 @@ repositoryConformanceSuite("Memory", () =>
       updatedAt: now,
     }),
   }),
+  { paginated: false },
 );
 
 repositoryConformanceSuite("MongoDB", () =>

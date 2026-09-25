@@ -4,6 +4,7 @@ export type FirebaseAuthProviderRepository = SessionIdentityPort;
 
 export type FirebaseAuthProviderRepositoryOptions = {
   apiKey: string;
+  projectId: string;
 };
 
 export type FirebaseSessionIdentityProviderOptions = {

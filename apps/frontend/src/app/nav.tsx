@@ -19,8 +19,8 @@ const DesignSystem = lazy(() =>
     default: DesignSystem,
   })),
 );
-const Series = lazy(() =>
-  import('../pages/series').then(({ Series }) => ({ default: Series })),
+const DataSources = lazy(() =>
+  import('../pages/data-sources').then(({ DataSources }) => ({ default: DataSources })),
 );
 const Comparisons = lazy(() =>
   import('../pages/comparisons').then(({ Comparisons }) => ({
@@ -30,8 +30,8 @@ const Comparisons = lazy(() =>
 const Insights = lazy(() =>
   import('../pages/insights').then(({ Insights }) => ({ default: Insights })),
 );
-const Users = lazy(() =>
-  import('../pages/users').then(({ Users }) => ({ default: Users })),
+const Tokens = lazy(() =>
+  import('../pages/tokens').then(({ Tokens }) => ({ default: Tokens })),
 );
 const Account = lazy(() =>
   import('../pages/account').then(({ Account }) => ({ default: Account })),
@@ -41,7 +41,7 @@ export function Nav({ shell }: { shell: ReactNode }) {
   return (
     <Routes>
       <Route element={shell}>
-        <Route index element={<Navigate to="/series" replace />} />
+        <Route index element={<Navigate to="/data-sources" replace />} />
         <Route path="info" element={<Info />} />
         <Route path="swagger" element={<ProjectInfo />} />
         <Route path="installation" element={<Installation />} />
@@ -50,10 +50,12 @@ export function Nav({ shell }: { shell: ReactNode }) {
           element={<Navigate to="/swagger" replace />}
         />
         <Route path="design-system" element={<DesignSystem />} />
-        <Route path="series" element={<Series />} />
+        <Route path="data-sources" element={<DataSources />} />
+        <Route path="series" element={<Navigate to="/data-sources" replace />} />
         <Route path="comparisons" element={<Comparisons />} />
         <Route path="insights" element={<Insights />} />
-        <Route path="users" element={<Users />} />
+        <Route path="tokens" element={<Tokens />} />
+        <Route path="users" element={<Navigate to="/tokens" replace />} />
         <Route path="account" element={<Account />} />
         <Route
           path="storybook"

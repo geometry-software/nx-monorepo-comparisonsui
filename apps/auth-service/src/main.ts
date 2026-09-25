@@ -8,7 +8,6 @@ async function bootstrap() {
   app.setGlobalPrefix("api");
   app.enableCors({
     origin: process.env.FRONTEND_ORIGIN ?? "http://localhost:4201",
-    credentials: true,
   });
   configureSwagger(app, { title: "Auth service" });
   const port = readPort(process.env.AUTH_PORT, 3015);

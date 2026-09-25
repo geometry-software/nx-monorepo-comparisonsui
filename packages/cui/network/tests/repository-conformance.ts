@@ -21,13 +21,16 @@ export type ConformanceRepository = CrudRepositoryPort<
   CreateConformanceItem,
   UpdateConformanceItem
 > & {
-  findAll(query: RepositoryQuery): Promise<PaginatedResult<ConformanceItem>>;
+  findAll(
+    query: RepositoryQuery,
+  ): Promise<PaginatedResult<ConformanceItem> | ConformanceItem[]>;
 };
 
 export function repositoryConformanceSuite(
   name: string,
   createRepository: () =>
     ConformanceRepository | Promise<ConformanceRepository>,
+  options: { paginated?: boolean } = {},
 ): void {
   describe(`${name} repository conformance`, () => {
     let repository: ConformanceRepository;
@@ -42,25 +45,31 @@ export function repositoryConformanceSuite(
       await expect(repository.findOne(created.id)).resolves.toEqual(created);
     });
 
-    it("filters, orders, and paginates lists", async () => {
+    it("filters and orders lists with provider pagination semantics", async () => {
       await repository.create({ name: "Beta", quantity: 2 });
       await repository.create({ name: "Alpha", quantity: 1 });
       await repository.create({ name: "Gamma", quantity: 3 });
 
-      await expect(
-        repository.findAll(
-          new RepositoryQuery({
-            search: "a",
-            sort: "quantity",
-            order: "desc",
-            page: 2,
-            limit: 1,
-          }),
-        ),
-      ).resolves.toMatchObject({
-        data: [{ name: "Beta", quantity: 2 }],
-        meta: { page: 2, limit: 1, total: 3, totalPages: 3 },
-      });
+      const result = await repository.findAll(
+        new RepositoryQuery({
+          search: "a",
+          sort: "quantity",
+          order: "desc",
+          ...(options.paginated === false ? {} : { page: 2, limit: 1 }),
+        }),
+      );
+      if (options.paginated === false) {
+        expect(result).toMatchObject([
+          { name: "Gamma", quantity: 3 },
+          { name: "Beta", quantity: 2 },
+          { name: "Alpha", quantity: 1 },
+        ]);
+      } else {
+        expect(result).toMatchObject({
+          data: [{ name: "Beta", quantity: 2 }],
+          meta: { page: 2, limit: 1, total: 3, totalPages: 3 },
+        });
+      }
     });
 
     it("updates and deletes with consistent not-found behavior", async () => {

@@ -8,7 +8,7 @@ import {
 } from "../core/errors.js";
 import { isValidPageQuery } from "../core/query.js";
 import type { PaginatedResult, RepositoryOptions } from "../core/types.js";
-import type { MongoDbRepositoryPort } from "./types.js";
+import type { MongoDbRepositoryPort, MongoDbRepositoryQuery } from "./types.js";
 
 export type MongoProviderConfig<
   TData extends ObjectLiteral,
@@ -46,54 +46,67 @@ export function createMongoProvider<
     return entity;
   };
 
-  return {
-    async findAll(query): Promise<PaginatedResult<TData>> {
-      if (!isValidPageQuery(query)) {
-        throw new RepositoryValidationError(
-          "MongoDB pagination requires positive integer page and limit values",
-        );
-      }
-      const search = query.search?.trim();
-      const searchFilter = search
-        ? {
-            $or: config.options.searchableFields.map((field) => ({
-              [field]: { $regex: escapeRegex(search), $options: "i" },
-            })),
-          }
-        : {};
-      const filter = query.filter
-        ? search
-          ? { $and: [query.filter, searchFilter] }
-          : query.filter
-        : searchFilter;
-      const requestedSort = config.options.sortableFields.includes(
-        query.sort as Extract<keyof TData, string>,
-      )
-        ? query.sort
-        : (config.options.defaultSort ?? "createdAt");
-      const sort =
-        config.options.sortFieldMap?.[requestedSort] ?? requestedSort;
-      const [data, total] = await runMongo("findAll", () =>
-        Promise.all([
-          config.repository
-            .createEntityCursor(filter as never)
-            .sort(sort, query.order === "asc" ? 1 : -1)
-            .skip((query.page - 1) * query.limit)
-            .limit(query.limit)
-            .toArray(),
-          config.repository.countDocuments(filter as never),
-        ]),
+  async function findAll(): Promise<TData[]>;
+  async function findAll(
+    query: MongoDbRepositoryQuery<TData>,
+  ): Promise<PaginatedResult<TData>>;
+  async function findAll(
+    query?: MongoDbRepositoryQuery<TData>,
+  ): Promise<TData[] | PaginatedResult<TData>> {
+    if (query === undefined) {
+      return runMongo("findAll", () =>
+        config.repository.createEntityCursor({}).toArray(),
       );
-      return {
-        data,
-        meta: {
-          page: query.page,
-          limit: query.limit,
-          total,
-          totalPages: Math.max(1, Math.ceil(total / query.limit)),
-        },
-      };
-    },
+    }
+    if (!isValidPageQuery(query)) {
+      throw new RepositoryValidationError(
+        "MongoDB pagination requires positive integer page and limit values",
+      );
+    }
+    const search = query.search?.trim();
+    const searchFilter = search
+      ? {
+          $or: config.options.searchableFields.map((field) => ({
+            [field]: { $regex: escapeRegex(search), $options: "i" },
+          })),
+        }
+      : {};
+    const filter = query.filter
+      ? search
+        ? { $and: [query.filter, searchFilter] }
+        : query.filter
+      : searchFilter;
+    const requestedSort = config.options.sortableFields.includes(
+      query.sort as Extract<keyof TData, string>,
+    )
+      ? query.sort
+      : (config.options.defaultSort ?? "createdAt");
+    const sort =
+      config.options.sortFieldMap?.[requestedSort] ?? requestedSort;
+    const [data, total] = await runMongo("findAll", () =>
+      Promise.all([
+        config.repository
+          .createEntityCursor(filter as never)
+          .sort(sort, query.order === "asc" ? 1 : -1)
+          .skip((query.page - 1) * query.limit)
+          .limit(query.limit)
+          .toArray(),
+        config.repository.countDocuments(filter as never),
+      ]),
+    );
+    return {
+      data,
+      meta: {
+        page: query.page,
+        limit: query.limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / query.limit)),
+      },
+    };
+  }
+
+  return {
+    findAll,
 
     async create(value) {
       return runMongo("create", () =>

@@ -1,5 +1,5 @@
 import type { RepositorySortOrder } from "../core/query.js";
-import type { CrudRepositoryPort } from "../core/repository.js";
+import type { CrudRepositoryPort, RepositoryReadPort } from "../core/repository.js";
 
 export type FirebaseWhereOperator =
   | "<"
@@ -43,16 +43,24 @@ export type FirebaseCursorResult<TData, TId = string> = {
   pageInfo: FirebasePageInfo<TId>;
 };
 
-export interface FirebaseQueryPort<TData, TId = string> {
-  findAll(
-    query: FirebaseRepositoryQuery<TData, TId>,
-  ): Promise<FirebaseCursorResult<TData, TId>>;
-}
+export interface FirebaseQueryPort<TData, TId = string>
+  extends RepositoryReadPort<
+    TData,
+    TId,
+    FirebaseRepositoryQuery<TData, TId>,
+    FirebaseCursorResult<TData, TId>
+  > {}
 
 export interface FirebaseRepositoryPort<
   TData,
   TCreate = TData,
   TUpdate = TCreate,
   TId = string,
-> extends CrudRepositoryPort<TData, TCreate, TUpdate, TId>,
-    FirebaseQueryPort<TData, TId> {}
+> extends CrudRepositoryPort<
+    TData,
+    TCreate,
+    TUpdate,
+    TId,
+    FirebaseRepositoryQuery<TData, TId>,
+    FirebaseCursorResult<TData, TId>
+  > {}

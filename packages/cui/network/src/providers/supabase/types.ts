@@ -1,5 +1,5 @@
 import type { PageQuery, RepositorySortOrder } from "../core/query.js";
-import type { CrudRepositoryPort } from "../core/repository.js";
+import type { CrudRepositoryPort, RepositoryReadPort } from "../core/repository.js";
 import type { PaginatedResult } from "../core/types.js";
 
 export type SupabaseFilterOperator =
@@ -30,16 +30,24 @@ export type SupabaseRepositoryQuery<TData> = PageQuery & {
   order?: readonly SupabaseOrder<TData>[];
 };
 
-export interface SupabaseQueryPort<TData> {
-  findAll(
-    query: SupabaseRepositoryQuery<TData>,
-  ): Promise<PaginatedResult<TData>>;
-}
+export interface SupabaseQueryPort<TData>
+  extends RepositoryReadPort<
+    TData,
+    string,
+    SupabaseRepositoryQuery<TData>,
+    PaginatedResult<TData>
+  > {}
 
 export interface SupabaseRepositoryPort<
   TData,
   TCreate = TData,
   TUpdate = TCreate,
   TId = string,
-> extends CrudRepositoryPort<TData, TCreate, TUpdate, TId>,
-    SupabaseQueryPort<TData> {}
+> extends CrudRepositoryPort<
+    TData,
+    TCreate,
+    TUpdate,
+    TId,
+    SupabaseRepositoryQuery<TData>,
+    PaginatedResult<TData>
+  > {}

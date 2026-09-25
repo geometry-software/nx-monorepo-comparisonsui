@@ -6,11 +6,13 @@ import {
 } from "@cui/account/sessions";
 import { AuthController } from "./session/session.controller.js";
 import { SessionService } from "./session/session.service.js";
+import { SessionTokenController } from "./session/session-token.controller.js";
+import { SessionTokenService } from "./session/session-token.service.js";
 import { LIBRARY_SESSION_SERVICE } from "./session/session.tokens.js";
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: ".env" })],
-  controllers: [AuthController],
+  controllers: [AuthController, SessionTokenController],
   providers: [
     {
       provide: LIBRARY_SESSION_SERVICE,
@@ -30,6 +32,7 @@ import { LIBRARY_SESSION_SERVICE } from "./session/session.tokens.js";
         ),
     },
     SessionService,
+    SessionTokenService,
   ],
 })
 export class AppModule {}

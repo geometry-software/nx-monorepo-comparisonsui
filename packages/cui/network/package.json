@@ -26,6 +26,12 @@
       "import": "./dist/providers/core/index.js",
       "default": "./dist/providers/core/index.js"
     },
+    "./providers/bump": {
+      "@cui/source": "./src/providers/bump/index.ts",
+      "types": "./dist/providers/bump/index.d.ts",
+      "import": "./dist/providers/bump/index.js",
+      "default": "./dist/providers/bump/index.js"
+    },
     "./providers/firebase": {
       "@cui/source": "./src/providers/firebase/index.ts",
       "types": "./dist/providers/firebase/index.d.ts",
@@ -50,6 +56,12 @@
       "import": "./dist/providers/nest/index.js",
       "default": "./dist/providers/nest/index.js"
     },
+    "./providers/pdf": {
+      "@cui/source": "./src/providers/pdf/index.ts",
+      "types": "./dist/providers/pdf/index.d.ts",
+      "import": "./dist/providers/pdf/index.js",
+      "default": "./dist/providers/pdf/index.js"
+    },
     "./providers/supabase": {
       "@cui/source": "./src/providers/supabase/index.ts",
       "types": "./dist/providers/supabase/index.d.ts",
@@ -71,9 +83,11 @@
     "class-validator": "^0.15.1",
     "firebase": "^12.19.0",
     "mongodb": "^7.6.0",
+    "pdfkit": "^0.20.2",
     "typeorm": "^1.1.1"
   },
   "devDependencies": {
+    "@types/pdfkit": "^0.17.6",
     "vitest": "~4.1.0"
   },
   "peerDependencies": {

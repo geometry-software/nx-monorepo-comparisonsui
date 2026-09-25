@@ -11,8 +11,7 @@
     "dev:frontend": "nx serve frontend",
     "dev": "npm run dev:analysis",
     "start": "node scripts/bootstrap.mjs",
-    "seed": "sh scripts/seed-analysis.sh",
-    "dev:analysis": "nx run-many -t serve --parallel=5",
+    "dev:analysis": "nx run-many -t serve --parallel=4",
     "graph": "nx graph"
   },
   "private": true,
@@ -20,8 +19,6 @@
     "node": "^22.22.3 || >=24.15.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.14.5",
-    "@babel/preset-react": "^7.14.5",
     "@eslint/js": "^9.8.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.0",

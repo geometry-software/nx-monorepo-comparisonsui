@@ -17,6 +17,8 @@ alter table public.sessions enable row level security;
 
 grant select, insert on table public.sessions to anon, authenticated;
 grant update (closed_at, verified_at) on table public.sessions to anon, authenticated;
+revoke update (provider, provider_id) on table public.sessions from anon, authenticated;
+revoke delete on table public.sessions from anon, authenticated;
 grant usage, select on sequence public.sessions_id_seq to anon, authenticated;
 
 drop policy if exists sessions_insert on public.sessions;
@@ -38,7 +40,10 @@ create policy sessions_update
   on public.sessions
   for update
   to anon, authenticated
-  using (closed_at is null)
-  with check (verified_at is not null or closed_at is not null);
+  using (true)
+  with check (true);
+
+drop policy if exists sessions_token_update on public.sessions;
+drop policy if exists sessions_token_delete on public.sessions;
 
 notify pgrst, 'reload schema';

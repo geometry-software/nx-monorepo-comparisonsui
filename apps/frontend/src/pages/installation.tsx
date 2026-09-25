@@ -8,12 +8,12 @@ import {
 } from '@cui/ui/components';
 import { useI18n } from '../app/i18n';
 
-const NODE_URL = 'https://nodejs.org/en/download';
 const REPOSITORY_URL =
   'https://github.com/geometry-software/nx-monorepo-comparisonsui';
 
 export function Installation() {
-  const { t } = useI18n();
+  const { language, t } = useI18n();
+  const nodeUrl = `https://nodejs.org/${language}/download`;
 
   return (
     <div className="space-y-8">
@@ -33,7 +33,7 @@ export function Installation() {
           description={t('installation.stepNodeText')}
         >
           <div className="rounded-xl bg-muted p-4">
-            <ExternalLink href={NODE_URL}>{NODE_URL}</ExternalLink>
+            <ExternalLink href={nodeUrl}>{nodeUrl}</ExternalLink>
           </div>
         </InstallationStep>
 

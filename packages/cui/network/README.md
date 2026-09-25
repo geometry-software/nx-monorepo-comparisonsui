@@ -26,7 +26,7 @@ import {
 
 ## Core contract
 
-`CrudRepositoryPort<TData, TCreate, TUpdate, TId>` defines `create`, `findOne`, `update`, `remove`, and `removeMany`. Query ports live beside each provider because pagination and filtering differ between data stores.
+`CrudRepositoryPort<TData, TCreate, TUpdate, TId>` defines `create`, `findAll`, `findOne`, `update`, `remove`, and `removeMany`. Calling `findAll()` without arguments returns all records as `Promise<TData[]>` in every provider. Provider query ports retain their query overloads because pagination and filtering differ between data stores.
 
 The files under `providers/core` have no NestJS imports. Repository errors and codecs are also framework-independent.
 
@@ -34,7 +34,7 @@ The files under `providers/core` have no NestJS imports. Repository errors and c
 
 ### Memory
 
-`createMemoryProvider(options)` stores values in a process-local map. The application supplies ID, create, and update functions. It adds offset pagination, filtering, search, and ordering through `MemoryRepositoryPort`.
+`createMemoryProvider(options)` stores values in a process-local map. The application supplies ID, create, and update functions. `findAll()` returns the complete matching list with optional filtering, search, and ordering; the Memory provider does not paginate results.
 
 ### MongoDB
 

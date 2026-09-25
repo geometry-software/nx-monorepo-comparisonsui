@@ -1,8 +1,6 @@
-import { CheckCircle2, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Plus, Search, Trash2 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import {
-  Alert,
-  AlertDescription,
   Autocomplete,
   Badge,
   Button,
@@ -14,10 +12,12 @@ import {
   CardTitle,
   ConfirmDialog,
   DataTable,
+  EmptyList,
   EntityDialog,
   FilterSelect,
   Input,
   Label,
+  Notification,
 } from '@cui/ui/components';
 import {
   confirmDialogLabels,
@@ -40,12 +40,12 @@ const descriptions: Record<Language, Record<string, string>> = {
       'The application select used by sorting, page-size, and role controls. It has a consistent trigger and accessible menu.',
     DataTable:
       'The reusable table used by data-source lists. It renders custom columns, loading and empty states, totals, and pagination.',
-    EntityDialog:
-      'The shared create and edit modal. It provides a consistent title, description, close behavior, and form area.',
-    ConfirmDialog:
-      'A reusable confirmation modal for regular and destructive decisions, with matching icon, color, copy, and request state.',
+    Dialog:
+      'Modal patterns for forms and regular or destructive confirmations, with consistent titles, controls, and request states.',
     Notification:
       'A short operation result message with a status icon and an explicit close action.',
+    EmptyList:
+      'A centered empty state for tables and collections with no items. The message can be customized.',
   },
   es: {
     Button:
@@ -58,12 +58,12 @@ const descriptions: Record<Language, Record<string, string>> = {
       'Selector de la aplicación para orden, tamaño de página y roles, con menú accesible y aspecto uniforme.',
     DataTable:
       'Tabla reutilizable para fuentes de datos con columnas, carga, estado vacío, totales y paginación.',
-    EntityDialog:
-      'Modal compartido de creación y edición con título, descripción, cierre y área de formulario uniformes.',
-    ConfirmDialog:
-      'Modal reutilizable para decisiones normales o destructivas, con icono, color, texto y estado de solicitud adecuados.',
+    Dialog:
+      'Patrones de modal para formularios y confirmaciones normales o destructivas, con títulos, controles y estados de solicitud uniformes.',
     Notification:
       'Mensaje breve sobre el resultado de una operación, con icono de estado y cierre explícito.',
+    EmptyList:
+      'Estado vacío centrado para tablas y colecciones sin elementos. El mensaje se puede personalizar.',
   },
   pt: {
     Button:
@@ -76,12 +76,12 @@ const descriptions: Record<Language, Record<string, string>> = {
       'Seletor da aplicação para ordenação, tamanho da página e funções, com menu acessível e visual uniforme.',
     DataTable:
       'Tabela reutilizável para fontes de dados com colunas, carregamento, vazio, totais e paginação.',
-    EntityDialog:
-      'Modal compartilhado de criação e edição com título, descrição, fechamento e formulário uniformes.',
-    ConfirmDialog:
-      'Modal reutilizável para decisões normais ou destrutivas, com ícone, cor, texto e estado da solicitação adequados.',
+    Dialog:
+      'Padrões de modal para formulários e confirmações comuns ou destrutivas, com títulos, controles e estados de solicitação consistentes.',
     Notification:
       'Mensagem curta sobre o resultado de uma operação, com ícone de estado e ação de fechar.',
+    EmptyList:
+      'Estado vazio centralizado para tabelas e coleções sem itens. A mensagem pode ser personalizada.',
   },
 };
 
@@ -90,16 +90,29 @@ export function DesignSystem() {
   const [sort, setSort] = useState('createdAt');
   const [autocompleteValue, setAutocompleteValue] = useState('');
   const [page, setPage] = useState(1);
+  const [tableSearch, setTableSearch] = useState('');
+  const [tableStatus, setTableStatus] = useState('all');
+  const [tableSort, setTableSort] = useState('name');
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [entityOpen, setEntityOpen] = useState(false);
   const [entityCategory, setEntityCategory] = useState('numeric');
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [warnOpen, setWarnOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const rows: SampleRow[] = Array.from({ length: 2 }, (_, index) => ({
-    id: `${page}-${index}`,
-    name: `Observation ${(page - 1) * 2 + index + 1}`,
-    status: index === 0 ? 'Active' : 'Draft',
+  const sampleRows: SampleRow[] = Array.from({ length: 12 }, (_, index) => ({
+    id: String(index + 1),
+    name: `Observation ${index + 1}`,
+    status: index % 2 === 0 ? 'Active' : 'Draft',
   }));
+  const filteredRows = sampleRows
+    .filter((row) => row.name.toLowerCase().includes(tableSearch.trim().toLowerCase()))
+    .filter((row) => tableStatus === 'all' || row.status.toLowerCase() === tableStatus)
+    .sort((left, right) => tableSort === 'status'
+      ? left.status.localeCompare(right.status) || left.name.localeCompare(right.name, undefined, { numeric: true })
+      : left.name.localeCompare(right.name, undefined, { numeric: true }));
+  const tablePages = Math.max(1, Math.ceil(filteredRows.length / 2));
+  const tablePage = Math.min(page, tablePages);
+  const rows = filteredRows.slice((tablePage - 1) * 2, tablePage * 2);
   const componentCount = Object.keys(descriptions.en).length;
 
   return (
@@ -120,13 +133,7 @@ export function DesignSystem() {
         </div>
       </header>
 
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-2xl font-bold">{t('designSystem.appGroup')}</h2>
-          <p className="text-muted-foreground">
-            {t('designSystem.appGroupText')}
-          </p>
-        </div>
+      <section>
         <div className="grid gap-4 lg:grid-cols-2">
           <Showcase name="Button" description={descriptions[language].Button}>
             <Button>
@@ -170,8 +177,8 @@ export function DesignSystem() {
                 onSearchChange={setAutocompleteValue}
                 onSelect={(option) => setAutocompleteValue(option.label)}
                 options={[
-                  { value: 'years', label: 'Year' },
-                  { value: 'tgi', label: 'TGI' },
+                  { value: 'mongodb', label: 'MongoDB' },
+                  { value: 'firebase', label: 'Firebase' },
                 ]}
                 placeholder="Search series..."
                 value={autocompleteValue}
@@ -218,22 +225,98 @@ export function DesignSystem() {
                 itemLabel="items"
                 loading={false}
                 onPage={setPage}
-                page={page}
-                pages={6}
+                page={tablePage}
+                pages={tablePages}
                 pageSize={2}
                 rows={rows}
+                searchBar={(
+                  <div className="mb-3 flex flex-wrap items-end gap-2">
+                    <div className="min-w-48 flex-1 space-y-1">
+                      <Label htmlFor="design-system-table-search">Search</Label>
+                      <div className="relative">
+                        <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          className="pl-9"
+                          id="design-system-table-search"
+                          onChange={(event) => { setTableSearch(event.target.value); setPage(1); }}
+                          placeholder="Search items..."
+                          value={tableSearch}
+                        />
+                      </div>
+                    </div>
+                    <div className="min-w-36 space-y-1">
+                      <Label>Status</Label>
+                      <FilterSelect
+                        ariaLabel="Filter table by status"
+                        onChange={(value) => { setTableStatus(value); setPage(1); }}
+                        options={[
+                          { value: 'all', label: 'All statuses' },
+                          { value: 'active', label: 'Active' },
+                          { value: 'draft', label: 'Draft' },
+                        ]}
+                        value={tableStatus}
+                      />
+                    </div>
+                    <div className="min-w-36 space-y-1">
+                      <Label>Sort</Label>
+                      <FilterSelect
+                        ariaLabel="Sort table rows"
+                        onChange={(value) => { setTableSort(value); setPage(1); }}
+                        options={[
+                          { value: 'name', label: 'Name' },
+                          { value: 'status', label: 'Status' },
+                        ]}
+                        value={tableSort}
+                      />
+                    </div>
+                  </div>
+                )}
                 selectedIds={selectedRows}
                 onSelectedIdsChange={setSelectedRows}
-                total={12}
+                total={filteredRows.length}
               />
             </div>
           </Showcase>
 
           <Showcase
-            name="EntityDialog"
-            description={descriptions[language].EntityDialog}
+            name="Notification"
+            description={descriptions[language].Notification}
           >
-            <Button onClick={() => setEntityOpen(true)}>Open form modal</Button>
+            <div className="space-y-3">
+              <Notification payload={{ type: 'success', message: 'Observation changes were saved successfully.' }} />
+              <Notification payload={{ type: 'error', message: 'Observation changes could not be saved.' }} />
+            </div>
+          </Showcase>
+
+          <Showcase
+            name="Empty List"
+            description={descriptions[language].EmptyList}
+          >
+            <EmptyList />
+          </Showcase>
+
+          <Showcase
+            className="lg:col-span-2"
+            name="Dialog"
+            description={descriptions[language].Dialog}
+          >
+            <div className="flex flex-wrap gap-3">
+              <Button onClick={() => setEntityOpen(true)}>
+                <Plus /> Open form modal
+              </Button>
+              <Button className="border-primary bg-transparent text-primary hover:bg-transparent hover:text-primary" onClick={() => setConfirmOpen(true)} variant="outline">
+                <CheckCircle2 /> Open confirm dialog
+              </Button>
+              <Button onClick={() => setWarnOpen(true)} variant="outline">
+                <AlertTriangle /> Open warning dialog
+              </Button>
+              <Button
+                onClick={() => setDeleteOpen(true)}
+                variant="destructive"
+              >
+                <Trash2 /> Open delete dialog
+              </Button>
+            </div>
             <EntityDialog
               description="A reusable modal with a real application form."
               onClose={() => setEntityOpen(false)}
@@ -246,19 +329,13 @@ export function DesignSystem() {
                     <Label htmlFor="design-system-modal-name">
                       Observation label <span className="text-destructive">*</span>
                     </Label>
-                    <Input
-                      id="design-system-modal-name"
-                      placeholder="Wireless keyboard"
-                    />
+                    <Input id="design-system-modal-name" placeholder="Wireless keyboard" />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="design-system-modal-inventory">
                       Year <span className="text-destructive">*</span>
                     </Label>
-                    <Input
-                      id="design-system-modal-inventory"
-                      placeholder="2025"
-                    />
+                    <Input id="design-system-modal-inventory" placeholder="2025" />
                   </div>
                   <div className="grid gap-2">
                     <Label>Category</Label>
@@ -276,31 +353,17 @@ export function DesignSystem() {
                     <Label htmlFor="design-system-modal-price">
                       Value <span className="text-destructive">*</span>
                     </Label>
-                    <Input
-                      id="design-system-modal-price"
-                      min="0"
-                      placeholder="99.00"
-                      step="0.01"
-                      type="number"
-                    />
+                    <Input id="design-system-modal-price" min="0" placeholder="99.00" step="0.01" type="number" />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="design-system-modal-quantity">
                       Precision <span className="text-destructive">*</span>
                     </Label>
-                    <Input
-                      id="design-system-modal-quantity"
-                      min="0"
-                      placeholder="20"
-                      type="number"
-                    />
+                    <Input id="design-system-modal-quantity" min="0" placeholder="20" type="number" />
                   </div>
                   <div className="grid gap-2 sm:col-span-2">
                     <Label htmlFor="design-system-modal-sku">Source key</Label>
-                    <Input
-                      id="design-system-modal-sku"
-                      placeholder="tgi"
-                    />
+                    <Input id="design-system-modal-sku" placeholder="source" />
                   </div>
                 </div>
                 <Button onClick={() => setEntityOpen(false)}>
@@ -308,36 +371,6 @@ export function DesignSystem() {
                 </Button>
               </div>
             </EntityDialog>
-          </Showcase>
-
-          <Showcase
-            name="Notification"
-            description={descriptions[language].Notification}
-          >
-            <Alert className="flex items-center gap-3 px-4 py-3" variant="success">
-              <CheckCircle2 className="size-5 shrink-0 translate-y-0" />
-              <AlertDescription>
-                Observation changes were saved successfully.
-              </AlertDescription>
-            </Alert>
-          </Showcase>
-
-          <Showcase
-            className="lg:col-span-2"
-            name="ConfirmDialog"
-            description={descriptions[language].ConfirmDialog}
-          >
-            <div className="flex flex-wrap gap-3">
-              <Button onClick={() => setConfirmOpen(true)}>
-                <CheckCircle2 /> Open confirm dialog
-              </Button>
-              <Button
-                onClick={() => setDeleteOpen(true)}
-                variant="destructive"
-              >
-                <Trash2 /> Open delete dialog
-              </Button>
-            </div>
             <ConfirmDialog
               labels={{
                 title: 'Confirm action',
@@ -353,6 +386,22 @@ export function DesignSystem() {
               onConfirm={() => setConfirmOpen(false)}
               open={confirmOpen}
               tone="confirm"
+            />
+            <ConfirmDialog
+              labels={{
+                title: 'Confirm reset',
+                description: 'Reset {{name}}?',
+                warning: 'This will remove its current data.',
+                cancel: 'Cancel',
+                pending: 'Resetting…',
+                confirm: 'Reset',
+              }}
+              busy={false}
+              itemName="this source"
+              onClose={() => setWarnOpen(false)}
+              onConfirm={() => setWarnOpen(false)}
+              open={warnOpen}
+              tone="warn"
             />
             <ConfirmDialog
               labels={confirmDialogLabels(t)}
@@ -384,10 +433,7 @@ function Showcase({
   return (
     <Card className={`h-full ${className}`}>
       <CardHeader>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <CardTitle className="font-mono text-lg">{name}</CardTitle>
-          <Badge variant="outline">React component</Badge>
-        </div>
+        <CardTitle className="font-mono text-lg">{name}</CardTitle>
         <CardDescription className="leading-relaxed">
           {description}
         </CardDescription>

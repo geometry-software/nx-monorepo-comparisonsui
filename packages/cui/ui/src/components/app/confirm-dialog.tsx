@@ -1,4 +1,5 @@
 import { AlertTriangle, CheckCircle2, Trash2 } from 'lucide-react';
+import type { ReactNode } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +23,8 @@ export function ConfirmDialog({
   onConfirm,
   labels,
   tone = 'destructive',
+  children,
+  confirmDisabled = false,
 }: {
   open: boolean;
   itemName: string;
@@ -40,20 +43,25 @@ export function ConfirmDialog({
     confirm?: string;
     confirmDelete?: string;
   };
-  tone?: 'destructive' | 'confirm';
+  tone?: 'destructive' | 'confirm' | 'warn';
+  children?: ReactNode;
+  confirmDisabled?: boolean;
 }) {
   const isConfirm = tone === 'confirm';
+  const isWarn = tone === 'warn';
   return (
     <AlertDialog
       open={open}
       onOpenChange={(next) => !next && !busy && onClose()}
     >
-      <AlertDialogContent onOverlayClick={() => !busy && onClose()}>
+      <AlertDialogContent aria-busy={busy} onOverlayClick={() => !busy && onClose()}>
         <AlertDialogHeader>
           <AlertDialogMedia
             className={
               isConfirm
                 ? 'bg-emerald-50 text-emerald-700'
+                : isWarn
+                  ? 'bg-[#FFA500]/15 text-[#FF8C00]'
                 : 'text-destructive'
             }
           >
@@ -65,28 +73,35 @@ export function ConfirmDialog({
             {labels.note ?? labels.warning}
           </AlertDialogDescription>
         </AlertDialogHeader>
+        {children}
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
+        {busy && (
+          <p className="flex items-center gap-2 text-sm text-muted-foreground" role="status">
+            <ButtonLoader /> {labels.pending ?? labels.deleting}
+          </p>
+        )}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={busy}>{labels.cancel}</AlertDialogCancel>
           <AlertDialogAction
-            disabled={busy}
-            onClick={onConfirm}
-            variant={isConfirm ? 'default' : 'destructive'}
+            disabled={busy || confirmDisabled}
+            onClick={(event) => {
+              event.preventDefault();
+              onConfirm();
+            }}
+            variant={isConfirm ? 'default' : isWarn ? 'warn' : 'destructive'}
           >
-            {busy ? (
-              <ButtonLoader />
-            ) : isConfirm ? (
+            {isConfirm ? (
               <CheckCircle2 />
+            ) : isWarn ? (
+              <AlertTriangle />
             ) : (
               <Trash2 />
             )}
-            {busy
-              ? (labels.pending ?? labels.deleting)
-              : (labels.confirm ?? labels.confirmDelete)}
+            {labels.confirm ?? labels.confirmDelete}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

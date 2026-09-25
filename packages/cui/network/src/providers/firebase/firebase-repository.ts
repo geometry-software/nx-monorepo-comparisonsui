@@ -17,7 +17,7 @@ import {
   type DocumentData,
   type Firestore,
   type QueryConstraint,
-} from "firebase/firestore";
+} from "./firebase-firestore-sdk.js";
 import {
   RepositoryNotFoundError,
   RepositoryValidationError,
@@ -83,9 +83,21 @@ export class FirebaseRepository<
     > = createObjectStorageCodec(),
   ) {}
 
+  async findAll(): Promise<TEntity[]>;
   async findAll(
     request: FirebaseRepositoryQuery<TEntity>,
-  ): Promise<FirebaseCursorResult<TEntity>> {
+  ): Promise<FirebaseCursorResult<TEntity>>;
+  async findAll(
+    request?: FirebaseRepositoryQuery<TEntity>,
+  ): Promise<TEntity[] | FirebaseCursorResult<TEntity>> {
+    if (request === undefined) {
+      const snapshot = await getDocs(
+        collection(this.firestore, this.collectionName),
+      );
+      return snapshot.docs.map((document) =>
+        this.codec.decode(document.data() as RepositoryRecord, document.id),
+      );
+    }
     if (request.next !== undefined && request.before !== undefined) {
       throw new RepositoryValidationError(
         "Firebase query accepts either next or before, not both",

@@ -1,17 +1,17 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { analysisApi } from '../services/api';
+import { comparisonApi } from '../services/comparisons.service';
 import { createRequestActivityMiddleware } from '../services/request-activity';
 
 const requestActivityMiddleware = createRequestActivityMiddleware([
-  analysisApi.reducerPath,
+  comparisonApi.reducerPath,
 ]);
 export const store = configureStore({
   reducer: {
-    [analysisApi.reducerPath]: analysisApi.reducer,
+    [comparisonApi.reducerPath]: comparisonApi.reducer,
   },
   middleware: (g) =>
     g().concat(
       requestActivityMiddleware,
-      analysisApi.middleware,
+      comparisonApi.middleware,
     ),
 });

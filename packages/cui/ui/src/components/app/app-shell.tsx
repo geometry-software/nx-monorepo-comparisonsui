@@ -8,7 +8,7 @@ import {
   Activity,
   ChartNoAxesCombined,
   Database,
-  Users,
+  KeyRound,
   CircleUserRound,
 } from 'lucide-react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
@@ -20,7 +20,7 @@ import { LanguageSwitcher } from './language-switcher';
 export type RequestActivityView = {
   active: boolean;
   duration: number;
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | null;
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | null;
   visible: boolean;
 };
 
@@ -32,6 +32,7 @@ const requestMethodStyles: Record<
   DELETE: 'border-red-200 bg-red-50 text-red-700',
   POST: 'border-emerald-200 bg-emerald-50 text-emerald-700',
   PUT: 'border-amber-200 bg-amber-50 text-amber-700',
+  PATCH: 'border-[#90EE90] bg-[#F0FFF0] text-[#228B22]',
 };
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -58,9 +59,10 @@ export function AppShell({
   const isProjectInfo =
     location.pathname === '/swagger' || location.pathname === '/installation';
   const isDesignSystem = location.pathname === '/design-system';
-  const isUsers = location.pathname === '/users';
+  const isTokens = location.pathname === '/tokens';
   const isAccount = location.pathname === '/account';
-  const isSessionPage = isUsers || isAccount;
+  const isDataSources = location.pathname === '/data-sources';
+  const isSessionPage = isTokens || isAccount;
   const isProjectPage = isInfo || isProjectInfo || isDesignSystem;
 
   return (
@@ -72,7 +74,7 @@ export function AppShell({
         <Separator className="my-5 md:hidden" />
         <nav className="grid gap-1 md:p-4" aria-label="Primary navigation">
           <NavGroup label={t('header.catalog')}>
-            <NavLink className={navClass} to="/series">
+            <NavLink className={navClass} to="/data-sources">
               <Database />
               {t('nav.dataSources')}
             </NavLink>
@@ -86,9 +88,9 @@ export function AppShell({
             </NavLink>
           </NavGroup>
           <NavGroup label={t('nav.session')}>
-            <NavLink className={navClass} to="/users">
-              <Users />
-              {t('nav.users')}
+            <NavLink className={navClass} to="/tokens">
+              <KeyRound />
+              {t('nav.tokens')}
             </NavLink>
             <NavLink className={navClass} to="/account">
               <CircleUserRound />
@@ -131,17 +133,19 @@ export function AppShell({
             <span>/</span>
             <strong className="text-foreground">
               {t(
-                isUsers
-                  ? 'header.users'
-                  : isAccount
-                    ? 'header.account'
-                    : isDesignSystem
-                  ? 'header.components'
-                  : isInfo
-                    ? 'header.overview'
-                    : isProjectInfo
-                      ? 'header.project'
-                      : 'header.console',
+                isDataSources
+                  ? 'header.dataSources'
+                  : isTokens
+                    ? 'header.tokens'
+                    : isAccount
+                      ? 'header.account'
+                      : isDesignSystem
+                        ? 'header.components'
+                        : isInfo
+                          ? 'header.overview'
+                          : isProjectInfo
+                            ? 'header.project'
+                            : 'header.console',
               )}
             </strong>
           </div>
@@ -191,7 +195,7 @@ function Brand() {
       <span className="grid size-10 place-items-center rounded-xl bg-primary font-bold text-primary-foreground">
         NX
       </span>
-      <strong className="whitespace-nowrap text-lg">ComparisonsUI</strong>
+      <strong className="whitespace-nowrap text-lg">Comparisons UI</strong>
     </div>
   );
 }

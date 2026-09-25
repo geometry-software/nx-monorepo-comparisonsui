@@ -1,11 +1,9 @@
 import {
   RepositoryConflictError,
   RepositoryNotFoundError,
-  RepositoryValidationError,
 } from "../core/errors.js";
-import { isValidPageQuery } from "../core/query.js";
-import type { PaginatedResult, RepositoryOptions } from "../core/types.js";
-import type { MemoryRepositoryPort } from "./types.js";
+import type { RepositoryOptions } from "../core/types.js";
+import type { MemoryRepositoryPort, MemoryRepositoryQuery } from "./types.js";
 
 export type MemoryProviderContext<TId> = {
   id: TId;
@@ -45,47 +43,35 @@ export function createMemoryProvider<TData, TCreate, TUpdate, TId = string>(
   };
 
   return {
-    async findAll(query): Promise<PaginatedResult<TData>> {
-      if (!isValidPageQuery(query)) {
-        throw new RepositoryValidationError(
-          "Memory pagination requires positive integer page and limit values",
-        );
-      }
+    async compute<TResult>(calculation: (records: readonly TData[]) => TResult): Promise<TResult> {
+      return calculation([...values.values()]);
+    },
+
+    async findAll(query: MemoryRepositoryQuery<TData> = {}): Promise<TData[]> {
       const search = query.search?.trim().toLocaleLowerCase();
       const requestedSort = config.options.sortableFields.includes(
         query.sort as Extract<keyof TData, string>,
       )
-        ? query.sort
+        ? query.sort ?? ''
         : (config.options.defaultSort ?? "createdAt");
       const sort =
         config.options.sortFieldMap?.[requestedSort] ?? requestedSort;
       const direction = query.order === "asc" ? 1 : -1;
-      const matches = [...values.values()]
+      return [...values.values()]
         .filter((value) => matchesFilter(value, query.filter))
         .filter((value) =>
           search
             ? config.options.searchableFields.some((field) =>
-                String(readField(value, field) ?? "")
-                  .toLocaleLowerCase()
-                  .includes(search),
-              )
+              String(readField(value, field) ?? "")
+                .toLocaleLowerCase()
+                .includes(search),
+            )
             : true,
         )
         .sort(
           (left, right) =>
             compare(readField(left, sort), readField(right, sort)) * direction,
         );
-      const start = (query.page - 1) * query.limit;
-      const total = matches.length;
-      return {
-        data: matches.slice(start, start + query.limit),
-        meta: {
-          page: query.page,
-          limit: query.limit,
-          total,
-          totalPages: Math.max(1, Math.ceil(total / query.limit)),
-        },
-      };
     },
 
     async create(value) {

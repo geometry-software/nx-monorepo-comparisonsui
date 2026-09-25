@@ -1,4 +1,7 @@
-export type ApiServiceName = "auth" | "years" | "tgi" | "comparisons";
+export type ApiServiceName =
+  | "auth"
+  | "comparisons"
+  | "dataSources";
 
 export type ApiServiceKind =
   | "authentication"

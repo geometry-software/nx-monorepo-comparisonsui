@@ -1,4 +1,4 @@
-import { BookOpen, Database, GitCompareArrows } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -15,13 +15,10 @@ import { getServiceUrl, type ServiceName } from '../services/service-location';
 const swaggerServices: ReadonlyArray<{
   service: ServiceName;
   label: string;
-  port: number;
-  database: string;
-  kind: 'source' | 'orchestrator';
 }> = [
-  { service: 'years', label: 'Year', port: 3010, database: 'nm_years', kind: 'source' },
-  { service: 'tgi', label: 'TGI', port: 3012, database: 'nm_tgi', kind: 'source' },
-  { service: 'comparisons', label: 'Comparisons', port: 3017, database: 'nm_comparisons', kind: 'orchestrator' },
+  { service: 'dataSources', label: 'Data Sources' },
+  { service: 'comparisons', label: 'Comparisons' },
+  { service: 'auth', label: 'Auth' },
 ];
 
 export function ProjectInfo() {
@@ -48,7 +45,7 @@ export function ProjectInfo() {
           <CardTitle>{t('info.swaggerTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="years">
+          <Tabs defaultValue="dataSources">
             <TabsList className="mb-4 grid h-auto w-full grid-cols-3 gap-1">
               {swaggerServices.map(({ service, label }) => (
                 <TabsTrigger key={service} value={service}>
@@ -69,30 +66,12 @@ export function ProjectInfo() {
 function SwaggerFrame({
   service,
   label,
-  port,
-  database,
-  kind,
 }: {
   service: ServiceName;
   label: string;
-  port: number;
-  database: string;
-  kind: 'source' | 'orchestrator';
 }) {
-  const Icon = kind === 'orchestrator' ? GitCompareArrows : Database;
-
   return (
     <TabsContent value={service}>
-      <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border bg-muted/35 px-3 py-2 text-sm">
-        <span className="flex items-center gap-2 font-medium">
-          <Icon className="size-4 text-primary" />
-          {label} {kind === 'orchestrator' ? 'orchestrator' : 'data source'}
-        </span>
-        <span className="rounded-full border bg-background px-2 py-0.5 text-xs text-muted-foreground">
-          localhost:{port}
-        </span>
-        <code className="rounded bg-background px-2 py-0.5 text-xs">{database}</code>
-      </div>
       <iframe
         className="h-[min(72vh,760px)] w-full rounded-lg border bg-background"
         src={getServiceUrl(service, '/docs')}

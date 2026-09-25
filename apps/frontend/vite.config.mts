@@ -24,9 +24,8 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, path.resolve(import.meta.dirname, '../..'), '');
   const servicePorts = {
     auth: endpoint('auth', 'Auth', 'authentication', Number(env.AUTH_PORT || 3015), '/auth'),
-    years: endpoint('years', 'Year', 'data-source', Number(env.YEARS_PORT || 3010), '/observations'),
-    tgi: endpoint('tgi', 'TGI', 'data-source', Number(env.TGI_PORT || 3012), '/observations'),
     comparisons: endpoint('comparisons', 'Comparison Orchestrator', 'orchestrator', Number(env.COMPARISONS_PORT || 3017), '/comparisons'),
+    dataSources: endpoint('dataSources', 'Data Sources', 'data-source', Number(env.DATA_SOURCES_PORT || 3018), '/data-sources'),
   } satisfies ServiceEndpointMap;
 
   return ({

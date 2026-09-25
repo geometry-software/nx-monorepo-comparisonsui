@@ -28,6 +28,9 @@ describe("repository core", () => {
       Partial<ApplicationState>,
       number
     > = {
+      async findAll() {
+        return [{ locale: "en", flags: {} }];
+      },
       async findOne() {
         return { locale: "en", flags: {} };
       },

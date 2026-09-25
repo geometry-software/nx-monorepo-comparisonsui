@@ -13,10 +13,9 @@ const nxExecutable = new URL(
 const appUrl = "http://localhost:4201";
 const requiredUrls = [
   appUrl,
-  "http://localhost:3010/api/observations?page=1&limit=1",
-  "http://localhost:3012/api/observations?page=1&limit=1",
   "http://localhost:3015/api/auth/sessions/providers",
-  "http://localhost:3017/api/comparisons",
+  "http://localhost:3017/api/comparisons/computes",
+  "http://localhost:3018/api/data-sources",
 ];
 const requiredPorts = [
   ...new Set(requiredUrls.map((url) => new URL(url).port)),
@@ -187,7 +186,7 @@ async function waitForApp(url, timeoutMs = 30000) {
 }
 
 function startDevelopmentProcess() {
-  console.log("Starting frontend and 4 services...");
+  console.log("Starting frontend and 3 services...");
   const devProcess = spawn(npmCommand, ["run", "dev"], {
     cwd: workspaceRoot,
     stdio: "inherit",

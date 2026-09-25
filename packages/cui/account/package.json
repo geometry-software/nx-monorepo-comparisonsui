@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@cui/network": "*",
-    "@supabase/supabase-js": "^2.116.0"
+    "@supabase/supabase-js": "^2.116.0",
+    "firebase": "^12.19.0"
   }
 }

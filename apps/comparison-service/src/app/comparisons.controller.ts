@@ -1,91 +1,65 @@
-import { Controller, Delete, Get, Post } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import {
-  createApiResponseContainer,
-  type ApiEndpoint,
-  type ApiResponseContainer,
-  type BulkDeleteResult,
-} from '@cui/network/providers';
-import type { Comparison } from './comparison.entity';
-import type { ComparisonDefinition } from './comparison.definition';
+import { Body, Controller, Get, HttpCode, Post, Query, StreamableFile } from '@nestjs/common';
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiProduces, ApiQuery, ApiTags } from '@nestjs/swagger';
+import type { ApiResponseContainer } from '@cui/network/providers/core';
+import type { ComparisonDefinition, ComparisonModel } from './modules/comparison.definition';
 import { ComparisonsService } from './comparisons.service';
-
-function responseExample(path: `/${string}`, resource: string, data: unknown) {
-  return {
-    endpoint: {
-      network: { protocol: 'inherit', hostname: 'current', port: 3017, basePath: '/api', path },
-      metadata: {
-        service: 'comparisons', label: 'Comparison Orchestrator',
-        kind: 'orchestrator', version: 'v1', resource,
-      },
-    },
-    data,
-  };
-}
+import type { ComputeComparison } from './compute-comparison.model';
+import { CreateComputeComparisonDto } from './create-compute-comparison.dto';
+import { ExportInsightPdfDto } from './export-insight-pdf.dto';
+import { comparisonResponseExample } from './utils/comparison-response';
 
 @ApiTags('comparisons')
 @Controller('comparisons')
 export class ComparisonsController {
   constructor(private readonly comparisons: ComparisonsService) {}
 
-  private endpoint(path: `/${string}`, resource: string): ApiEndpoint {
-    return {
-      network: {
-        protocol: 'inherit',
-        hostname: 'current',
-        port: Number(process.env.COMPARISONS_PORT || 3017),
-        basePath: '/api',
-        path,
-      },
-      metadata: {
-        service: 'comparisons',
-        label: 'Comparison Orchestrator',
-        kind: 'orchestrator',
-        version: 'v1',
-        resource,
-      },
-    };
+  @Get('computes')
+  @ApiOperation({ summary: 'List compute comparisons from MongoDB and Bump' })
+  @ApiQuery({ name: 'provider', required: false, enum: ['mongodb', 'bump'], description: 'Omit to list comparisons from both providers.' })
+  @ApiOkResponse({ description: 'Comparisons from the selected provider, or from both providers when omitted.' })
+  async listGroups(@Query('provider') provider?: string): Promise<ApiResponseContainer<ComputeComparison[]>> {
+    return this.comparisons.listComputeComparisons(provider);
   }
 
-  private container<Data>(path: `/${string}`, resource: string, data: Data) {
-    return createApiResponseContainer(this.endpoint(path, resource), data);
+  @Post('computes')
+  @ApiOperation({ summary: 'Compare every source pair and store the result in MongoDB or Bump' })
+  @ApiBody({ type: CreateComputeComparisonDto, description: 'Select mongodb or bump as the comparison storage provider.' })
+  @ApiCreatedResponse({ description: 'The created comparison includes its storage provider.' })
+  async createGroup(@Body() input: CreateComputeComparisonDto): Promise<ApiResponseContainer<ComputeComparison>> {
+    return this.comparisons.createComputeComparison(input);
   }
 
   @Get('definition')
   @ApiOperation({ summary: 'Return the initialized comparison service definition' })
   @ApiOkResponse({
     schema: {
-      example: responseExample('/comparisons/definition', 'comparison-definition', {
-        sources: [{ key: 'Year', label: 'Year' }, { key: 'TGI', label: 'TGI' }],
-        pairCount: 1,
-        alignment: { field: 'year', label: 'Year' },
+      example: comparisonResponseExample('/comparisons/definition', 'comparison-definition', {
+        model: { id: 'period-value', fields: { period: 'string', value: 'number' } },
+        alignment: { field: 'period', label: 'Period' },
         metric: { field: 'r', key: 'pearson', label: 'Pearson R', minimum: -1, maximum: 1, precision: 4, emptyLabel: '—' },
-        table: { idLabel: 'ID', pairLabel: 'Comparison', coverageLabel: 'Shared years', pairSeparator: '–' },
+        table: { pairLabel: 'Comparison', coverageLabel: 'Shared periods', pairSeparator: '–' },
       }),
     },
   })
   definition(): ApiResponseContainer<ComparisonDefinition> {
-    return this.container('/comparisons/definition', 'comparison-definition', this.comparisons.getDefinition());
+    return this.comparisons.getDefinition();
   }
 
-  @Get()
-  @ApiOperation({ summary: 'Return the stored comparison table' })
-  @ApiOkResponse({ schema: { example: responseExample('/comparisons', 'comparisons', []) } })
-  async list(): Promise<ApiResponseContainer<Comparison[]>> {
-    return this.container('/comparisons', 'comparisons', await this.comparisons.list());
+  @Get('model')
+  @ApiOperation({ summary: 'Return the comparison model used by this service' })
+  @ApiOkResponse({ description: 'Comparison model with its field types' })
+  model(): ApiResponseContainer<ComparisonModel> {
+    return this.comparisons.getModel();
   }
 
-  @Post('refresh')
-  @ApiOperation({ summary: 'Fetch sources, align years, calculate and store configured Pearson correlations' })
-  @ApiOkResponse({ schema: { example: responseExample('/comparisons/refresh', 'comparisons', []) } })
-  async refresh(): Promise<ApiResponseContainer<Comparison[]>> {
-    return this.container('/comparisons/refresh', 'comparisons', await this.comparisons.refresh());
-  }
-
-  @Delete()
-  @ApiOperation({ summary: 'Delete all stored comparisons' })
-  @ApiOkResponse({ schema: { example: responseExample('/comparisons', 'comparisons', { deleted: 1 }) } })
-  async deleteAll(): Promise<ApiResponseContainer<BulkDeleteResult>> {
-    return this.container('/comparisons', 'comparisons', await this.comparisons.deleteAll());
+  @Post('insights')
+  @HttpCode(200)
+  @ApiProduces('application/pdf')
+  @ApiOperation({ summary: 'Export a selected comparison as a correlation insight PDF' })
+  async exportInsightPdf(@Body() input: ExportInsightPdfDto) {
+    const { fileName, content } = await this.comparisons.exportInsightPdf(input);
+    return new StreamableFile(content, {
+      type: 'application/pdf', disposition: `attachment; filename="${fileName}"`, length: content.length,
+    });
   }
 }
